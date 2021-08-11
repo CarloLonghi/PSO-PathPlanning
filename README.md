@@ -16,3 +16,14 @@ INSTRUCTIONS
 
 To test the program run the PSO.py file.
 Environment and PSO parameters can be set directly in the code.
+
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim3.gif)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path3.png)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim4.gif)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path4.png)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim5.gif)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path5.png)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim6.gif)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path6.png)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim7.gif)
+![First Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path7.png)
