@@ -1,4 +1,4 @@
-PATH PLANNER USING PARTICLE SWARM OPTIMIZATION
+#PATH PLANNER USING PARTICLE SWARM OPTIMIZATION
 
 Simple Particle Swarm Optimization applied to the task of path planning.
 The goal is to find the shortest path between two points in a map with some obstacles.
@@ -12,18 +12,39 @@ This strategy helps to favor exploration during the first iterations and exploit
 The obstacles size and position are generated randomly at every run of the program.
 
 
-INSTRUCTIONS
+**INSTRUCTIONS**
 
 To test the program run the PSO.py file.
 Environment and PSO parameters can be set directly in the code.
 
+The following exmaples are made using a 100x100 map with 8 obstacles.
+The number of particles/paths used is 10 and they are made of 5 checkpoints.
+
+*Example number 1:*
+
 ![First Example Animation](./images/anim3.gif)
-![First Example Final Path](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path3.png)
-![Second Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim4.gif)
-![Second Example Final Path](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path4.png)
-![Third Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim5.gif)
-![Third Example Final Path](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path5.png)
-![Fourth Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim6.gif)
-![Fourth Example Final Path](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path6.png)
-![Fifth Example Animation](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/anim7.gif)
-![Fifth Example Final Path](https://github.com/CarloLonghi/PSO-PathPlanning/tree/main/images/final_path7.png)
+![First Example Final Path](./images/final_path3.png)
+
+
+*Example number 2:*
+
+![Second Example Animation](./images/anim4.gif)
+![Second Example Final Path](./images/final_path4.png)
+
+
+*Example number 3:*
+
+![Third Example Animation](./images/anim5.gif)
+![Third Example Final Path](./images/final_path5.png)
+
+
+*Example number 4:*
+
+![Fourth Example Animation](./images/anim6.gif)
+![Fourth Example Final Path](./images/final_path6.png)
+
+
+*Example number 5:*
+
+![Fifth Example Animation](./images/anim7.gif)
+![Fifth Example Final Path](./images/final_path7.png)
