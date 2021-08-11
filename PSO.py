@@ -4,9 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import sqrt
 import PathVisualization as PV
+from matplotlib.colors import ListedColormap
 
 # function to check if the points in a path are between the bounds
-def checkBounds(bounds,path):
+def check_bounds(bounds,path):
     for i in range(len(bounds)):
         if path[i][0]<bounds[i][0]: #if particle is less than lower bound
             path[i][0]=bounds[i][0]
@@ -19,8 +20,33 @@ def checkBounds(bounds,path):
             path[i][1]=bounds[i][1]
     
 
+# function that returns the sign of an integer --> porta in PATHVISUALIZATION
+def sign(x):
+    if x == 0:
+        return 0
+    elif x>0:
+        return 1
+    else:
+        return -1
+
+# function used to find the next point in the segment between 2 points in a path
+def next_point(current_point,x_dist,y_dist,ratio):
+    
+    next_point = current_point
+    x_inc = sign(x_dist)
+    y_inc = sign(y_dist)
+    x_dist = abs(x_dist)
+    y_dist = abs(y_dist)
+
+    if y_dist*ratio >= x_dist:
+        next_point[1] += y_inc
+    else:
+        next_point[0] += x_inc
+
+    return next_point
+
 # function to check if a segment crosses an obstacle
-def checkSegment(start, end):
+def check_segment(start, end):
     found_obstacle = False
     current_point = np.copy(start)
 
@@ -34,26 +60,26 @@ def checkSegment(start, end):
     while not np.array_equal(current_point,end) and not found_obstacle:
         x_distance = end[0]-current_point[0]
         y_distance = end[1]-current_point[1]
-        current_point = PV.next_point(current_point,x_distance,y_distance,ratio)
+        current_point = next_point(current_point,x_distance,y_distance,ratio)
         if map[current_point[0],current_point[1]] == 255:
             found_obstacle = True
         
     return not found_obstacle
 
 # function to check if a path crosses an obstacle
-def checkPath(path):
+def check_path(path):
     
-    if not checkSegment(np.array([0,0]),path[1]):
+    if not check_segment(np.array([0,0]),path[1]):
         return False
-    if not checkSegment(path[-1],np.array([(map_dimension-1),(map_dimension-1)])):
+    if not check_segment(path[-1],np.array([(map_dimension-1),(map_dimension-1)])):
         return False
     
     for i in range(len(path)-1):
-        if not checkSegment(path[i],path[i+1]):
+        if not check_segment(path[i],path[i+1]):
             return False
 
 # function to get a random point between the bounds
-def getRandomInt(bounds):
+def get_random_int(bounds):
     return (np.round(rnd.uniform(bounds[0],bounds[1],2))).astype(int)
 
 # function that initializes the variables of the problem
@@ -79,19 +105,19 @@ def initialization(f,bounds,n, map, map_dim, num_points):
         while reset:
             reset = False
 
-            paths[p] = [getRandomInt(bounds[i]) for i in range(num_points)]
+            paths[p] = [get_random_int(bounds[i]) for i in range(num_points)]
             paths[p] = [i.astype(int) for i in paths[p]]
 
             # check if the path crosses an obstacle and generate new random points
-            while (not checkSegment(np.array([0,0]),paths[p][0]) or map[paths[p][0][0],paths[p][0][1]] == 255):
-                paths[p][0] = getRandomInt(bounds[0])
+            while (not check_segment(np.array([0,0]),paths[p][0]) or map[paths[p][0][0],paths[p][0][1]] == 255):
+                paths[p][0] = get_random_int(bounds[0])
 
             i = 1
             while i < num_points-1 and not reset:
                 num_tries = 0
-                while (not checkSegment(paths[p][i-1],paths[p][i]) or map[paths[p][i][0],paths[p][i][1]] == 255) and num_tries<20:
+                while (not check_segment(paths[p][i-1],paths[p][i]) or map[paths[p][i][0],paths[p][i][1]] == 255) and num_tries<20:
                     num_tries += 1
-                    paths[p][i] = getRandomInt(bounds[i])
+                    paths[p][i] = get_random_int(bounds[i])
                 
                 if num_tries >= 20:
                     reset = True
@@ -100,10 +126,10 @@ def initialization(f,bounds,n, map, map_dim, num_points):
 
             if not reset:
                 num_tries = 0
-                while (not checkSegment(paths[p][-1],np.array([map_dimension-1,map_dimension-1])) or \
-                    not checkSegment(paths[p][-2],paths[p][-1]) or map[paths[p][-1][0],paths[p][-1][1]] == 255) and num_tries<20:
+                while (not check_segment(paths[p][-1],np.array([map_dimension-1,map_dimension-1])) or \
+                    not check_segment(paths[p][-2],paths[p][-1]) or map[paths[p][-1][0],paths[p][-1][1]] == 255) and num_tries<20:
                     num_tries += 1
-                    paths[p][-1] = getRandomInt(bounds[-1])
+                    paths[p][-1] = get_random_int(bounds[-1])
                 
                 if num_tries >= 20:
                     reset = True
@@ -123,7 +149,7 @@ def initialization(f,bounds,n, map, map_dim, num_points):
 # function that implements the PSO algorithm
 # f = fitting function
 # bounds = bounds of the search space
-# phip,phig,omega = pso parameters
+# phip,phig,omega_min, omega_max = pso parameters
 # n = number of particles
 # map = obstcales map of the environment
 # tol = precision of the pso algorithm
@@ -143,7 +169,8 @@ def particle_swarm_optimization(f,bounds,n, phip, phig, omega_min, omega_max, to
 
     plt.ion()
     fig, ax = plt.subplots()
-    ax.matshow(map)
+    cmap = ListedColormap(["white","red"])
+    ax.matshow(map,cmap=cmap)
     l = list()
     for i in range(n):
         l.append(ax.plot([],[])[0])
@@ -156,7 +183,7 @@ def particle_swarm_optimization(f,bounds,n, phip, phig, omega_min, omega_max, to
         found_new_global_best = False
 
         # every 30 iterations and if the global best doesn't improve for some iterations we assign random velocity values
-        if iteration%30 == 0 or iterations_no_improv%14 == 0:
+        if iteration%40 == 0 or iterations_no_improv%24 == 0:
             for j in range(n):
                 velocity[j] = [rnd.uniform(-abs(bounds[i][1]-bounds[i][0]),abs(bounds[i][1]-bounds[i][0]),2) for i in range(len(bounds))]
 
@@ -182,18 +209,18 @@ def particle_swarm_optimization(f,bounds,n, phip, phig, omega_min, omega_max, to
 
                 paths[p] = (np.round(np.add(paths[p],velocity[p]))).astype(int)
 
-                checkBounds(bounds,paths[p])
+                check_bounds(bounds,paths[p])
 
                 # check if the path crosses an obstacle and generate new random points
-                while (not checkSegment(np.array([0,0]),paths[p][0]) or map[paths[p][0][0],paths[p][0][1]] == 255):
-                    paths[p][0] = getRandomInt(bounds[0])
+                while (not check_segment(np.array([0,0]),paths[p][0]) or map[paths[p][0][0],paths[p][0][1]] == 255):
+                    paths[p][0] = get_random_int(bounds[0])
 
                 i = 1
                 while i < num_points-1 and not reset:
                     num_tries = 0
-                    while (not checkSegment(paths[p][i-1],paths[p][i]) or map[paths[p][i][0],paths[p][i][1]] == 255) and num_tries<20:
+                    while (not check_segment(paths[p][i-1],paths[p][i]) or map[paths[p][i][0],paths[p][i][1]] == 255) and num_tries<20:
                         num_tries += 1
-                        paths[p][i] = getRandomInt(bounds[i])
+                        paths[p][i] = get_random_int(bounds[i])
                     
                     if num_tries >= 20:
                         reset = True
@@ -202,10 +229,10 @@ def particle_swarm_optimization(f,bounds,n, phip, phig, omega_min, omega_max, to
 
                 if not reset:
                     num_tries = 0
-                    while (not checkSegment(paths[p][-1],np.array([map_dimension-1,map_dimension-1])) or \
-                        not checkSegment(paths[p][-2],paths[p][-1]) or map[paths[p][-1][0],paths[p][-1][1]] == 255) and num_tries<20:
+                    while (not check_segment(paths[p][-1],np.array([map_dimension-1,map_dimension-1])) or \
+                        not check_segment(paths[p][-2],paths[p][-1]) or map[paths[p][-1][0],paths[p][-1][1]] == 255) and num_tries<20:
                         num_tries += 1
-                        paths[p][-1] = getRandomInt(bounds[-1])
+                        paths[p][-1] = get_random_int(bounds[-1])
                     
                     if num_tries >= 20:
                         reset = True
@@ -243,11 +270,12 @@ def particle_swarm_optimization(f,bounds,n, phip, phig, omega_min, omega_max, to
         
         plt.pause(0.1)
         plt.draw()
+        plt.savefig('./images/animation/iteration'+str(iteration-1)+'.png')
 
-    return global_best, global_best_val
+    return global_best, global_best_val, iteration
 
 
-
+# calculate length of a path using euclidean distance
 def euclidean_distance(x):
     total_distance = 0
     total_distance += sqrt((x[0][0])**2 + (x[0][1])**2)
@@ -257,6 +285,7 @@ def euclidean_distance(x):
     
     return total_distance
 
+# calculate length of a path using manhattan distance
 def manhattan_distance(x):
     total_distance = 0
     total_distance += x[0][0]+x[0][1]
@@ -267,13 +296,17 @@ def manhattan_distance(x):
     return total_distance
 
 
+
+
+
+
 # problem parameters
-map_dimension = 20
-num_obstacles = 5
+map_dimension = 100
+num_obstacles = 8
 map = PV.generate_map(num_obstacles,map_dimension)
 starting_point = (0,0)
 goal = (map_dimension-1,map_dimension-1)
-checkpoint_num = 3
+checkpoint_num = 5
 f = euclidean_distance
 dimension_bounds=[0,map_dimension-1]
 bounds=[0]*checkpoint_num
@@ -284,19 +317,25 @@ num_iterations = 500
 
 #PSO parameters
 phip = 1.1
-phig = 6.2 
-#omega = 0.7
+phig = 5.2 
 omega_min = 0.7
 omega_max = 1.1
 
 tol=0.0000001
 
 
+import shutil, os
+shutil.rmtree('./images/animation')
+os.mkdir('./images/animation')
 
-global_best, global_best_val = particle_swarm_optimization(f, bounds, p, phip, phig, omega_min, omega_max, tol, map, num_iterations, map_dimension, checkpoint_num)
+# call of the main function
+global_best, global_best_val, iteration = particle_swarm_optimization(f, bounds, p, phip, phig, omega_min, omega_max, tol, map, num_iterations, map_dimension, checkpoint_num)
+
 
 print("global best path = "+str(global_best))
 print("best path length = "+str(global_best_val))
-#PV.drawPath(global_best,map,map_dimension)
-PV.showPath(global_best,map,map_dimension)
+cmap = ListedColormap(["white","red"])
+PV.show_path(global_best,map,map_dimension,cmap)
+plt.savefig('./images/final_path.png')
+PV.create_gif(iteration)
 plt.show(block=True)
